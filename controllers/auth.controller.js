@@ -6,7 +6,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 
 // Middlewares
-const { signUpValidation, loginValidation } = require("../middlewares/validate");
+const {
+  signUpValidation,
+  loginValidation,
+} = require("../middlewares/validate");
 const { uploadImageSingle } = require("../middlewares/cloudinary.js");
 
 module.exports = {
@@ -15,7 +18,7 @@ module.exports = {
     try {
       return res.status(200).send({
         success: true,
-        message: "Pong",
+        message: "Pong!",
       });
     } catch (err) {
       return res.status(500).send({
@@ -60,7 +63,6 @@ module.exports = {
       });
       await user.save();
 
-
       return res.status(200).send({
         success: true,
         data: {
@@ -76,43 +78,40 @@ module.exports = {
     }
   },
 
-
-    // Login
+  // Login
   postLoginController: async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+      const { email, password } = req.body;
 
-        // Run Hapi/Joi validation
-        const { error } = await loginValidation.validateAsync(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
+      // Run Hapi/Joi validation
+      const { error } = await loginValidation.validateAsync(req.body);
+      if (error) return res.status(400).send(error.details[0].message);
 
-        //   check if user exist
-        const user = await User.findOne({ email: email });
-        if (!user) return res.status(400).send("Invalid email or password");
+      //   check if user exist
+      const user = await User.findOne({ email: email });
+      if (!user) return res.status(400).send("Invalid email or password");
 
-        // validate password
-        const validatePassword = await bcrypt.compare(password, user.password);
-        if (!validatePassword)
-          return res.status(400).send("Invalid email or password");
+      // validate password
+      const validatePassword = await bcrypt.compare(password, user.password);
+      if (!validatePassword)
+        return res.status(400).send("Invalid email or password");
 
-        //   Generate JWT Token
-        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
+      //   Generate JWT Token
+      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
 
-        return res.status(200).send({
-          success: true,
-          data: {
-            user: user,
-            token: token,
-          },
-          message: "Login successful",
-        });
-
+      return res.status(200).send({
+        success: true,
+        data: {
+          user: user,
+          token: token,
+        },
+        message: "Login successful",
+      });
     } catch (err) {
-        return res.status(500).send({
-          success: false,
-          message: err.message,
-        });
+      return res.status(500).send({
+        success: false,
+        message: err.message,
+      });
     }
-
   },
 };
